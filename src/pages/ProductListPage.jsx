@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   AdjustmentsHorizontalIcon,
@@ -20,7 +20,7 @@ import {
 import { useShop } from '../context/ShopContext';
 
 const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSelectedProductId }) => {
-  const { addToCart, addNotification } = useShop();
+  const { addToCart, addNotification, addToFavorites, removeFromFavorites, favorites } = useShop();
   const [viewMode, setViewMode] = useState('grid');
   const [sortBy, setSortBy] = useState('featured');
   const [selectedFilters, setSelectedFilters] = useState({
@@ -29,123 +29,122 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
     priceRange: '',
     ingredients: []
   });
-  const [favorites, setFavorites] = useState(new Set());
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Configuration des catégories
-  const categoryConfig = {
+  // Configuration des catégories avec validation
+  const categoryConfig = useMemo(() => ({
     all: { title: 'Tous nos Produits', subtitle: 'Découvrez toute notre gamme premium' },
     serums: { title: 'Sérums Éclaircissants', subtitle: 'Traitements concentrés anti-taches' },
     cremes: { title: 'Crèmes Hydratantes', subtitle: 'Nutrition et confort quotidien' },
     huiles: { title: 'Huiles Précieuses', subtitle: 'Élixirs de beauté ancestraux' },
     masques: { title: 'Masques Purifiants', subtitle: 'Soins intensifs hebdomadaires' },
     nettoyants: { title: 'Nettoyants Doux', subtitle: 'Purification respectueuse' }
-  };
+  }), []);
 
-  // Base de produits complète
-  const allProducts = [
+  // Produits avec validation sécurisée
+  const allProducts = useMemo(() => [
     {
       id: 1,
-      name: "Sérum Éclaircissant Vitamine C",
-      category: 'serums',
+      name: "Sérum Éclaircissant Vitamine C+",
       price: 48,
       rating: 4.9,
       reviews: 1847,
       image: "serum-vitc.jpg",
-      subtitle: "Illumine et unifie le teint",
-      badges: ['Best-seller', 'Bio'],
-      benefits: ['Réduit les taches', 'Éclat immédiat', 'Anti-âge'],
-      ingredients: ['vitamine-c', 'niacinamide'],
-      skinTypes: ['tous', 'mixte', 'grasse'],
+      category: 'serums',
+      skinTypes: ['tous', 'grasse', 'mixte'],
       concerns: ['anti-taches', 'eclat'],
-      description: "Sérum haute performance qui cible les taches brunes et unifie le teint."
+      ingredients: ['vitamine-c', 'niacinamide'],
+      badges: ['Best-seller', 'Anti-taches'],
+      inStock: true,
+      featured: true,
+      description: "Sérum haute performance pour réduire l'hyperpigmentation"
     },
     {
       id: 2,
-      name: "Baume Karité Nutrition Intense",
-      category: 'soins-visage',
-      price: 36,
-      rating: 4.8,
-      reviews: 2156,
-      image: "creme-aloe.jpg",
-      subtitle: "Nutrition 24h pour peaux sèches",
-      badges: ['Bio', 'Vegan'],
-      benefits: ['Hydrate intensément', 'Répare', 'Apaise'],
-      ingredients: ['karite', 'aloe-vera'],
-      skinTypes: ['seche', 'sensible'],
-      concerns: ['hydratation'],
-      description: "Baume réparateur qui nourrit et protège les peaux sèches."
+      name: "Huile Précieuse Trio Africain",
+      price: 42,
+      rating: 4.9,
+      reviews: 1876,
+      image: "huile-argan.jpg",
+      category: 'huiles',
+      skinTypes: ['seche', 'sensible', 'mature'],
+      concerns: ['hydratation', 'anti-age'],
+      ingredients: ['argan', 'baobab', 'karite'],
+      badges: ['Bio', 'Artisanal'],
+      inStock: true,
+      featured: true,
+      description: "Mélange d'huiles précieuses africaines"
     },
     {
       id: 3,
-      name: "Huile Précieuse Trio Africain",
-      category: 'huiles',
-      price: 42,
-      rating: 4.9,
-      reviews: 1543,
-      image: "huile-argan.jpg",
-      subtitle: "Trio d'huiles précieuses",
-      badges: ['Premium', 'Artisanal'],
-      benefits: ['Nourrit intensément', 'Éclat immédiat', 'Anti-âge'],
-      ingredients: ['argan', 'baobab', 'hibiscus'],
-      skinTypes: ['tous', 'seche', 'mature'],
-      concerns: ['eclat', 'anti-age'],
-      description: "Mélange d'huiles africaines précieuses pour une peau éclatante."
+      name: "Crème Hydratante Karité Supreme",
+      price: 35,
+      rating: 4.8,
+      reviews: 1234,
+      image: "creme-hydratante.jpg",
+      category: 'cremes',
+      skinTypes: ['tous', 'seche'],
+      concerns: ['hydratation'],
+      ingredients: ['karite', 'aloe'],
+      badges: ['Quotidien'],
+      inStock: true,
+      featured: false,
+      description: "Hydratation 24h avec karité pur"
     },
     {
       id: 4,
-      name: "Gel Nettoyant Hibiscus",
-      category: 'nettoyants',
+      name: "Masque Éclat Argile Rose",
       price: 28,
       rating: 4.7,
-      reviews: 987,
-      image: "gel-hibiscus.jpg",
-      subtitle: "Nettoyage doux et purifiant",
-      badges: ['Naturel', 'Sans sulfate'],
-      benefits: ['Nettoie en douceur', 'Purifie', 'Respecte le pH'],
-      ingredients: ['hibiscus', 'aloe-vera'],
-      skinTypes: ['tous', 'sensible'],
-      concerns: ['purete'],
-      description: "Gel nettoyant doux qui purifie sans agresser la peau."
+      reviews: 892,
+      image: "masque-argile.jpg",
+      category: 'masques',
+      skinTypes: ['sensible', 'terne'],
+      concerns: ['eclat', 'purete'],
+      ingredients: ['argile-rose'],
+      badges: ['Sensible'],
+      inStock: true,
+      featured: false,
+      description: "Purification douce pour éclat immédiat"
     },
     {
       id: 5,
-      name: "Masque Argile Bleu Purifiante",
-      category: 'masques',
-      price: 32,
+      name: "Gel Nettoyant Hibiscus",
+      price: 24,
       rating: 4.6,
-      reviews: 743,
-      image: "masque-argile.jpg",
-      subtitle: "Purification intense",
-      badges: ['Détox', 'Bio'],
-      benefits: ['Purifie en douceur', 'Désincruste', 'Matifie'],
-      ingredients: ['argile-bleu', 'the-vert'],
+      reviews: 657,
+      image: "gel-hibiscus.jpg",
+      category: 'nettoyants',
       skinTypes: ['grasse', 'mixte'],
       concerns: ['purete'],
-      description: "Masque purifiant ultra-doux à l'argile bleu."
+      ingredients: ['hibiscus'],
+      badges: ['Doux'],
+      inStock: true,
+      featured: false,
+      description: "Nettoyage en douceur avec hibiscus"
     },
     {
       id: 6,
-      name: "Lait Démaquillant Karité",
-      category: 'nettoyants',
-      price: 26,
+      name: "Sérum Niacinamide 10%",
+      price: 32,
       rating: 4.8,
-      reviews: 1234,
-      image: "lait-calendula.jpg",
-      subtitle: "Démaquillage en douceur",
-      badges: ['Tout type de peau', 'Bio'],
-      benefits: ['Démaquille parfaitement', 'Nourrit', 'Apaise'],
-      ingredients: ['karite', 'calendula'],
-      skinTypes: ['tous', 'sensible', 'seche'],
-      concerns: ['hydratation'],
-      description: "Lait démaquillant onctueux qui nettoie en douceur."
+      reviews: 1456,
+      image: "serum-niacinamide.jpg",
+      category: 'serums',
+      skinTypes: ['grasse', 'mixte'],
+      concerns: ['purete', 'anti-taches'],
+      ingredients: ['niacinamide'],
+      badges: ['Concentré'],
+      inStock: true,
+      featured: false,
+      description: "Traitement ciblé pores et imperfections"
     }
-  ];
+  ], []);
 
-  // Options de filtres
-  const filterOptions = {
+  // Options de filtres sécurisées
+  const filterOptions = useMemo(() => ({
     skinType: [
       { value: 'tous', label: 'Tous types' },
       { value: 'seche', label: 'Peau sèche' },
@@ -175,109 +174,139 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
       { value: 'baobab', label: 'Huile de Baobab' },
       { value: 'aloe', label: 'Aloe Vera' }
     ]
-  };
+  }), []);
 
-  // Options de tri
-  const sortOptions = [
-    { value: 'featured', label: 'Mis en avant' },
-    { value: 'price-asc', label: 'Prix croissant' },
-    { value: 'price-desc', label: 'Prix décroissant' },
-    { value: 'rating', label: 'Meilleures notes' },
-    { value: 'newest', label: 'Nouveautés' }
-  ];
+  // Fonction de filtrage optimisée avec validation
+  const getFilteredProducts = useCallback(() => {
+    if (!Array.isArray(allProducts)) return [];
 
-  // Filtrage et tri des produits
-  const getFilteredProducts = () => {
-    let filtered = allProducts;
-
-    // Protection contre les erreurs
-    if (!Array.isArray(filtered)) {
-      return [];
-    }
+    let filtered = [...allProducts];
 
     // Filtre par catégorie
-    if (category !== 'all') {
-      filtered = filtered.filter(product => product.category === category);
-    }
-
-    // Filtres avancés avec vérifications de sécurité
-    if (selectedFilters.skinType && selectedFilters.skinType.length > 0) {
-      filtered = filtered.filter(product =>
-        product.skinTypes && Array.isArray(product.skinTypes) && selectedFilters.skinType.some(type => product.skinTypes.includes(type))
+    if (category && category !== 'all') {
+      filtered = filtered.filter(product => 
+        product && product.category === category
       );
     }
 
-    if (selectedFilters.concern && selectedFilters.concern.length > 0) {
-      filtered = filtered.filter(product =>
-        product.concerns && Array.isArray(product.concerns) && selectedFilters.concern.some(concern => product.concerns.includes(concern))
-      );
-    }
+    // Filtres avancés avec protection
+    Object.entries(selectedFilters).forEach(([filterType, filterValue]) => {
+      if (!filterValue || (Array.isArray(filterValue) && filterValue.length === 0)) return;
 
-    if (selectedFilters.priceRange) {
-      const [min, max] = selectedFilters.priceRange.split('-').map(p => 
-        p === '+' ? Infinity : parseInt(p)
-      );
       filtered = filtered.filter(product => {
-        const price = parseFloat(product.price) || 0;
-        if (max === undefined) return price >= min;
-        return price >= min && price <= max;
+        if (!product) return false;
+
+        switch (filterType) {
+          case 'skinType':
+            return Array.isArray(product.skinTypes) && 
+                   Array.isArray(filterValue) &&
+                   filterValue.some(type => product.skinTypes.includes(type));
+          
+          case 'concern':
+            return Array.isArray(product.concerns) && 
+                   Array.isArray(filterValue) &&
+                   filterValue.some(concern => product.concerns.includes(concern));
+          
+          case 'priceRange':
+            if (typeof filterValue !== 'string') return true;
+            const [min, max] = filterValue.split('-');
+            const price = parseFloat(product.price) || 0;
+            const minPrice = parseFloat(min) || 0;
+            const maxPrice = max === '+' ? Infinity : parseFloat(max) || Infinity;
+            return price >= minPrice && price <= maxPrice;
+          
+          case 'ingredients':
+            return Array.isArray(product.ingredients) && 
+                   Array.isArray(filterValue) &&
+                   filterValue.some(ingredient => product.ingredients.includes(ingredient));
+          
+          default:
+            return true;
+        }
       });
-    }
+    });
 
-    if (selectedFilters.ingredients && selectedFilters.ingredients.length > 0) {
-      filtered = filtered.filter(product =>
-        product.ingredients && Array.isArray(product.ingredients) && selectedFilters.ingredients.some(ingredient => product.ingredients.includes(ingredient))
-      );
-    }
+    // Tri sécurisé
+    filtered.sort((a, b) => {
+      if (!a || !b) return 0;
 
-    // Tri
-    switch (sortBy) {
-      case 'price-asc':
-        filtered.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
-        break;
-      case 'price-desc':
-        filtered.sort((a, b) => (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0));
-        break;
-      case 'rating':
-        filtered.sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0));
-        break;
-      case 'newest':
-        filtered.sort((a, b) => (b.id || 0) - (a.id || 0));
-        break;
-      default:
-        filtered.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-    }
+      switch (sortBy) {
+        case 'price-asc':
+          return (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0);
+        case 'price-desc':
+          return (parseFloat(b.price) || 0) - (parseFloat(a.price) || 0);
+        case 'rating':
+          return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
+        case 'newest':
+          return (b.id || 0) - (a.id || 0);
+        default:
+          return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      }
+    });
 
-    return filtered || [];
-  };
+    return filtered;
+  }, [allProducts, category, selectedFilters, sortBy]);
 
-  const filteredProducts = getFilteredProducts();
-  const currentCategory = categoryConfig[category] || categoryConfig.all;
+  // Produits filtrés mémorisés
+  const filteredProducts = useMemo(() => getFilteredProducts(), [getFilteredProducts]);
 
-  // Protection contre les erreurs de rendu
-  const safeFilteredProducts = filteredProducts || [];
+  // Catégorie actuelle sécurisée
+  const currentCategory = useMemo(() => 
+    categoryConfig[category] || categoryConfig.all
+  , [category, categoryConfig]);
 
-  // Gestion des filtres
-  const toggleFilter = (filterType, value) => {
-    setSelectedFilters(prev => ({
-      ...prev,
-      [filterType]: filterType === 'priceRange' 
-        ? (prev[filterType] === value ? '' : value)
-        : Array.isArray(prev[filterType]) && prev[filterType].includes(value)
-          ? prev[filterType].filter(v => v !== value)
-          : [...(prev[filterType] || []), value]
-    }));
-  };
+  // Gestion des filtres optimisée
+  const toggleFilter = useCallback((filterType, value) => {
+    setSelectedFilters(prev => {
+      const currentValue = prev[filterType] || [];
+      
+      if (filterType === 'priceRange') {
+        return {
+          ...prev,
+          [filterType]: currentValue === value ? '' : value
+        };
+      }
+      
+      if (Array.isArray(currentValue)) {
+        const newValue = currentValue.includes(value)
+          ? currentValue.filter(v => v !== value)
+          : [...currentValue, value];
+        
+        return {
+          ...prev,
+          [filterType]: newValue
+        };
+      }
+      
+      return prev;
+    });
+  }, []);
 
-  const toggleFavorite = (productId) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(productId)) {
-      newFavorites.delete(productId);
+  // Gestion favoris optimisée
+  const handleToggleFavorite = useCallback((productId) => {
+    const product = allProducts.find(p => p && p.id === productId);
+    if (!product) return;
+
+    const isFavorite = favorites && favorites.some(fav => fav && fav.id === productId);
+    
+    if (isFavorite) {
+      removeFromFavorites(productId);
     } else {
-      newFavorites.add(productId);
+      addToFavorites(product);
     }
-    setFavorites(newFavorites);
-  };
+  }, [allProducts, favorites, addToFavorites, removeFromFavorites]);
+
+  // Gestion panier optimisée
+  const handleAddToCart = useCallback((product) => {
+    if (product && product.inStock && addToCart) {
+      addToCart(product);
+    }
+  }, [addToCart]);
+
+  // Vérifier si produit est en favoris
+  const isFavorite = useCallback((productId) => {
+    return favorites && favorites.some(fav => fav && fav.id === productId);
+  }, [favorites]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary-cream to-white">
@@ -337,7 +366,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              {safeFilteredProducts.length} produits exclusifs formulés avec des ingrédients bio d'exception
+              {filteredProducts.length} produits exclusifs formulés avec des ingrédients bio d'exception
               <br className="hidden sm:block" />
               <span className="text-primary-gold font-medium">pour révéler la beauté naturelle de votre peau</span>
             </motion.p>
@@ -513,7 +542,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
             >
               <div>
                 <p className="text-primary-forest font-semibold text-sm sm:text-base">
-                  {safeFilteredProducts.length} produit{safeFilteredProducts.length > 1 ? 's' : ''} trouvé{safeFilteredProducts.length > 1 ? 's' : ''}
+                  {filteredProducts.length} produit{filteredProducts.length > 1 ? 's' : ''} trouvé{filteredProducts.length > 1 ? 's' : ''}
                 </p>
                 <p className="text-xs sm:text-sm text-primary-sage">
                   {Object.entries(selectedFilters)
@@ -557,7 +586,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
               layout
             >
               <AnimatePresence>
-                {safeFilteredProducts.map((product, index) => (
+                {filteredProducts.map((product, index) => (
                   <motion.div
                     key={product.id}
                     layout
@@ -592,9 +621,9 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-all duration-300 hidden sm:flex">
                         <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex flex-col gap-2">
                           <motion.button
-                            onClick={() => toggleFavorite(product.id)}
+                            onClick={() => handleToggleFavorite(product.id)}
                             className={`w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-all ${
-                              favorites.has(product.id)
+                              isFavorite(product.id)
                                 ? 'bg-accent-coral text-white'
                                 : 'bg-white/80 text-primary-sage hover:text-accent-coral'
                             }`}
@@ -622,7 +651,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                           </motion.button>
                           <motion.button
                             onClick={() => {
-                              addToCart(product);
+                              handleAddToCart(product);
                               addNotification({
                                 type: 'success',
                                 title: 'Produit ajouté !',
@@ -693,9 +722,9 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                       {/* Actions Mobile */}
                       <div className="flex gap-1.5 xs:gap-2 sm:hidden">
                         <motion.button
-                          onClick={() => toggleFavorite(product.id)}
+                          onClick={() => handleToggleFavorite(product.id)}
                           className={`p-1.5 xs:p-2 rounded-lg transition-all ${
-                            favorites.has(product.id)
+                            isFavorite(product.id)
                               ? 'bg-accent-coral text-white'
                               : 'bg-primary-sage/10 text-primary-sage'
                           }`}
@@ -720,7 +749,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                       {/* Bouton Ajout Panier */}
                       <motion.button
                         onClick={() => {
-                          addToCart(product);
+                          handleAddToCart(product);
                           addNotification({
                             type: 'success',
                             title: 'Produit ajouté !',
@@ -743,7 +772,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
             </motion.div>
 
             {/* Message si aucun produit */}
-            {safeFilteredProducts.length === 0 && (
+            {filteredProducts.length === 0 && (
               <motion.div
                 className="text-center py-12 sm:py-16"
                 initial={{ opacity: 0 }}

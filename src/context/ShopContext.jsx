@@ -13,11 +13,12 @@ const actionTypes = {
   REMOVE_NOTIFICATION: 'REMOVE_NOTIFICATION'
 };
 
-// État initial
+// État initial sécurisé
 const initialState = {
   cart: [],
   favorites: [],
   userProfile: {
+    id: 'discovery',
     firstName: '',
     lastName: '',
     email: '',
@@ -29,18 +30,54 @@ const initialState = {
   notifications: []
 };
 
-// Reducer
+// Utilitaires de validation
+const validateCartItem = (item) => {
+  if (!item || typeof item !== 'object') return null;
+  
+  return {
+    id: item.id || '',
+    name: item.name || 'Produit sans nom',
+    price: parseFloat(item.price) || 0,
+    image: item.image || '/images/placeholder.webp',
+    quantity: parseInt(item.quantity) || 1,
+    category: item.category || 'general',
+    brand: item.brand || 'Terrafro'
+  };
+};
+
+const validateUserProfile = (profile) => {
+  if (!profile || typeof profile !== 'object') return initialState.userProfile;
+  
+  return {
+    id: profile.id || 'discovery',
+    firstName: profile.firstName || '',
+    lastName: profile.lastName || '',
+    email: profile.email || '',
+    skinType: profile.skinType || '',
+    skinConcerns: Array.isArray(profile.skinConcerns) ? profile.skinConcerns : [],
+    visitCount: parseInt(profile.visitCount) || 0,
+    isLoggedIn: Boolean(profile.isLoggedIn)
+  };
+};
+
+// Reducer amélioré
 const shopReducer = (state, action) => {
+  // Validation de l'état
+  if (!state) state = initialState;
+  
   switch (action.type) {
     case actionTypes.ADD_TO_CART: {
-      const existingItem = state.cart.find(item => item.id === action.payload.id);
+      const validatedItem = validateCartItem(action.payload);
+      if (!validatedItem) return state;
+      
+      const existingItem = (state.cart || []).find(item => item.id === validatedItem.id);
       
       if (existingItem) {
         return {
           ...state,
-          cart: state.cart.map(item =>
-            item.id === action.payload.id
-              ? { ...item, quantity: item.quantity + 1 }
+          cart: (state.cart || []).map(item =>
+            item.id === validatedItem.id
+              ? { ...item, quantity: (item.quantity || 0) + 1 }
               : item
           )
         };
@@ -48,25 +85,34 @@ const shopReducer = (state, action) => {
       
       return {
         ...state,
-        cart: [...state.cart, { ...action.payload, quantity: 1 }]
+        cart: [...(state.cart || []), { ...validatedItem, quantity: 1 }]
       };
     }
 
     case actionTypes.REMOVE_FROM_CART:
       return {
         ...state,
-        cart: state.cart.filter(item => item.id !== action.payload)
+        cart: (state.cart || []).filter(item => item && item.id !== action.payload)
       };
 
-    case actionTypes.UPDATE_QUANTITY:
+    case actionTypes.UPDATE_QUANTITY: {
+      const quantity = parseInt(action.payload.quantity) || 0;
+      if (quantity <= 0) {
+        return {
+          ...state,
+          cart: (state.cart || []).filter(item => item && item.id !== action.payload.id)
+        };
+      }
+      
       return {
         ...state,
-        cart: state.cart.map(item =>
-          item.id === action.payload.id
-            ? { ...item, quantity: action.payload.quantity }
+        cart: (state.cart || []).map(item =>
+          item && item.id === action.payload.id
+            ? { ...item, quantity }
             : item
         )
       };
+    }
 
     case actionTypes.CLEAR_CART:
       return {
@@ -75,41 +121,54 @@ const shopReducer = (state, action) => {
       };
 
     case actionTypes.ADD_TO_FAVORITES: {
-      const isAlreadyFavorite = state.favorites.some(item => item.id === action.payload.id);
-      if (isAlreadyFavorite) return state;
+      const validatedItem = validateCartItem(action.payload);
+      if (!validatedItem) return state;
+      
+      const existingFavorite = (state.favorites || []).find(item => item.id === validatedItem.id);
+      
+      if (existingFavorite) {
+        return state; // Déjà en favoris
+      }
       
       return {
         ...state,
-        favorites: [...state.favorites, action.payload]
+        favorites: [...(state.favorites || []), validatedItem]
       };
     }
 
     case actionTypes.REMOVE_FROM_FAVORITES:
       return {
         ...state,
-        favorites: state.favorites.filter(item => item.id !== action.payload)
+        favorites: (state.favorites || []).filter(item => item && item.id !== action.payload)
       };
 
     case actionTypes.UPDATE_USER_PROFILE:
       return {
         ...state,
-        userProfile: { ...state.userProfile, ...action.payload }
+        userProfile: validateUserProfile({ ...state.userProfile, ...action.payload })
       };
 
-    case actionTypes.ADD_NOTIFICATION:
+    case actionTypes.ADD_NOTIFICATION: {
+      const notification = {
+        id: Date.now() + Math.random(),
+        type: action.payload.type || 'info',
+        title: action.payload.title || '',
+        message: action.payload.message || '',
+        duration: action.payload.duration || 4000
+      };
+      
       return {
         ...state,
-        notifications: [...state.notifications, { 
-          id: Date.now(), 
-          ...action.payload,
-          timestamp: new Date().toISOString()
-        }]
+        notifications: [...(state.notifications || []), notification]
       };
+    }
 
     case actionTypes.REMOVE_NOTIFICATION:
       return {
         ...state,
-        notifications: state.notifications.filter(notification => notification.id !== action.payload)
+        notifications: (state.notifications || []).filter(notification => 
+          notification && notification.id !== action.payload
+        )
       };
 
     default:

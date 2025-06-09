@@ -1,0 +1,189 @@
+/* Optimisations de performance CSS */
+
+/* Conteneur principal avec optimisation GPU */
+.performance-container {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Optimisation des images */
+.optimized-image {
+  content-visibility: auto;
+  contain: layout style paint;
+  will-change: transform;
+  transition: transform 0.3s ease-out;
+}
+
+.optimized-image:hover {
+  transform: scale(1.05) translateZ(0);
+}
+
+/* Grilles optimisées */
+.performance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  contain: layout style;
+}
+
+/* Scroll virtuel optimisé */
+.virtual-scroll {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  contain: strict;
+}
+
+/* Lazy loading pour les cartes */
+.card-container {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  contain: layout style paint;
+}
+
+.card-container.loaded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Optimisation des animations Framer Motion */
+.motion-reduce-preference {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Optimisation du rendu des filtres */
+.filter-container {
+  contain: layout style;
+  will-change: auto;
+}
+
+.filter-button {
+  contain: layout style paint;
+  transition: all 0.2s ease-out;
+  transform: translateZ(0);
+}
+
+/* Performance pour mobile */
+@media (max-width: 768px) {
+  .performance-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  .optimized-image {
+    will-change: auto;
+  }
+  
+  .optimized-image:hover {
+    transform: none;
+  }
+}
+
+/* Optimisation du scroll */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  overflow-anchor: auto;
+  scroll-padding-top: 2rem;
+}
+
+/* Conteneur de contenu avec optimisation */
+.content-wrapper {
+  isolation: isolate;
+  contain: layout style;
+}
+
+/* Chargement progressif */
+.progressive-loading {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Optimisation des boutons */
+.performance-button {
+  contain: layout style paint;
+  transform: translateZ(0);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.performance-button:hover {
+  transform: translateY(-2px) translateZ(0);
+}
+
+/* Gestion de la visibilité pour économiser les ressources */
+.offscreen {
+  content-visibility: hidden;
+}
+
+.onscreen {
+  content-visibility: visible;
+}
+
+/* Optimisation des overlays */
+.overlay-optimized {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  will-change: backdrop-filter;
+}
+
+/* Réduction des repaints */
+.no-repaint {
+  contain: strict;
+  will-change: auto;
+}
+
+/* Optimisation des badges et éléments flottants */
+.floating-element {
+  position: absolute;
+  contain: layout style paint;
+  pointer-events: none;
+}
+
+/* Performance des listes virtuelles */
+.virtual-list-item {
+  contain: layout style paint;
+  height: var(--item-height, auto);
+  overflow: hidden;
+}
+
+/* Optimisation mémoire pour les grandes listes */
+.memory-optimized {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Gestion des focus pour l'accessibilité sans impact perf */
+.focus-optimized:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
+  transition: outline-offset 0.1s ease;
+}
+
+/* Suppression des transitions pour prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+} 

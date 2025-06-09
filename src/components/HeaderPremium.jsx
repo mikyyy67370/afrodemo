@@ -199,13 +199,13 @@ const HeaderPremium = ({ userProfile, setUserProfile, currentPage, setCurrentPag
             </nav>
 
             {/* Actions utilisateur */}
-            <div className="flex items-center gap-3 xs:gap-4 sm:gap-5 ml-4 xs:ml-6 sm:ml-8">
+            <div className="flex items-center gap-2 xs:gap-3 sm:gap-4 ml-2 xs:ml-4 sm:ml-6">
               
               {/* Sélecteur de profil discret */}
               <div className="relative" ref={profileMenuRef}>
                 <motion.button
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className={`hidden lg:flex items-center gap-2 px-3 xl:px-4 py-2 rounded-full border-2 transition-all ${currentProfile.bgColor} ${currentProfile.borderColor} hover:shadow-organic`}
+                  className={`hidden lg:flex items-center gap-1 xl:gap-2 px-2 xl:px-3 py-2 rounded-full border-2 transition-all ${currentProfile.bgColor} ${currentProfile.borderColor} hover:shadow-organic`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -279,7 +279,7 @@ const HeaderPremium = ({ userProfile, setUserProfile, currentPage, setCurrentPag
                   placeholder="Rechercher..."
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  className="pl-9 xl:pl-10 pr-4 py-2 w-48 xl:w-64 bg-secondary-cream rounded-full border border-primary-sage/30 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/20 transition-all text-sm"
+                  className="pl-9 xl:pl-10 pr-4 py-2 w-36 xl:w-48 bg-secondary-cream rounded-full border border-primary-sage/30 focus:border-primary-gold focus:outline-none focus:ring-2 focus:ring-primary-gold/20 transition-all text-sm"
                 />
               </div>
 

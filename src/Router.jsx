@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useShop } from './context/ShopContext';
 import HeaderPremium from './components/HeaderPremium';
 import FooterPremium from './components/FooterPremium';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -20,11 +21,42 @@ import LegalPage from './pages/LegalPage';
 
 const Router = () => {
   const [currentPage, setCurrentPage] = useState('home');
+  const [userProfile, setUserProfile] = useState({ id: 'discovery' });
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedProductId, setSelectedProductId] = useState(1);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   
   // Utiliser le Context pour le profil utilisateur
-  const { userProfile, updateUserProfile } = useShop();
+  const { updateUserProfile } = useShop();
+
+  // Scroll au top lors du changement de page - Version améliorée
+  useEffect(() => {
+    // Scroll immédiat et forcé
+    window.scrollTo(0, 0);
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    
+    // Double vérification avec un délai
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'auto'
+      });
+    }, 50);
+    
+    // Forcer le focus sur le body pour éviter les problèmes de scroll
+    document.body.focus();
+  }, [currentPage]);
+
+  // Helper pour mettre à jour le profil utilisateur avec validation
+  const updateUserProfileHelper = (newProfileData) => {
+    if (!newProfileData || typeof newProfileData !== 'object') return;
+    
+    setUserProfile(prev => ({
+      ...prev,
+      ...newProfileData
+    }));
+  };
 
   // Configuration des pages
   const pages = {
@@ -53,9 +85,11 @@ const Router = () => {
 
   return (
     <div className="min-h-screen">
+      <ScrollToTop trigger={currentPage} />
+      
       <HeaderPremium 
         userProfile={userProfile} 
-        setUserProfile={updateUserProfile}
+        setUserProfile={updateUserProfileHelper}
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         setSelectedCategory={setSelectedCategory}
