@@ -15,160 +15,44 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline';
 import { useShop } from '../context/ShopContext';
+import { products, getProductsByCategory, getRecommendedProducts } from '../data/products';
 
 const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) => {
   const [activeFilter, setActiveFilter] = useState('all');
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [favorites, setFavorites] = useState([]);
   const sectionRef = useRef(null);
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const isInView = useInView(sectionRef, { once: true, amount: 0.2 });
 
   // Utiliser le Context pour les favoris et le panier
-  const { favorites, addToFavorites, removeFromFavorites, addToCart } = useShop();
+  const { addToFavorites, removeFromFavorites, addToCart } = useShop();
 
-  // Fonction pour toggle les favoris (compatibilité)
+  // Gestion des favoris
   const toggleFavorite = (product) => {
-    const isFavorite = favorites.some(fav => fav.id === product.id);
-    if (isFavorite) {
-      removeFromFavorites(product.id);
-    } else {
-      addToFavorites(product);
-    }
+    setFavorites(prev => {
+      const isFavorite = prev.some(fav => fav.id === product.id);
+      if (isFavorite) {
+        return prev.filter(fav => fav.id !== product.id);
+      } else {
+        return [...prev, product];
+      }
+    });
   };
 
-  // Filtres de produits avec icônes professionnelles
+  // Catégories de filtres
   const filters = [
-    {
-      id: 'all',
-      name: 'Tous les produits',
-      count: 6,
-      icon: GiftIcon,
-      color: 'text-primary-sage'
-    },
-    {
-      id: 'anti-taches',
-      name: 'Anti-Taches',
-      count: 3,
-      icon: SparklesIcon,
-      color: 'text-primary-gold'
-    },
-    {
-      id: 'nutrition',
-      name: 'Nutrition Intense',
-      count: 2,
-      icon: BeakerIcon,
-      color: 'text-accent-moss'
-    },
-    {
-      id: 'eclat',
-      name: 'Éclat Naturel',
-      count: 4,
-      icon: FireIcon,
-      color: 'text-accent-terracotta'
-    },
-    {
-      id: 'sensible',
-      name: 'Peaux Sensibles',
-      count: 2,
-      icon: ShieldCheckIcon,
-      color: 'text-accent-lavender'
-    }
-  ];
-
-  // Gamme de produits enrichie
-  const products = [
-    { 
-      id: 1, 
-      name: "Sérum Éclaircissant Vitamine C", 
-      price: "48€", 
-      rating: 4.9, 
-      reviews: 1847,
-      image: "serum-vitc.jpg",
-      subtitle: "Concentré anti-taches intensif",
-      category: "serums",
-      badges: ["Best-seller", "Anti-taches"],
-      ingredients: ['Vitamine C 15%', 'Niacinamide', 'Acide kojique'],
-      benefits: ['Réduit les taches brunes', 'Unifie le teint', 'Éclat immédiat'],
-      description: "Sérum haute performance pour réduire l'hyperpigmentation et unifier le teint."
-    },
-    { 
-      id: 2, 
-      name: "Baume Karité Nutrition Intense", 
-      price: "36€", 
-      rating: 4.8, 
-      reviews: 2156,
-      image: "creme-aloe.jpg",
-      subtitle: "Réparateur intensif nuit",
-      category: "cremes",
-      badges: ["Bio", "Réparateur"],
-      ingredients: ['Karité 30%', 'Aloe Vera', 'Vitamine E'],
-      benefits: ['Nutrition 24h', 'Répare', 'Apaise'],
-      description: "Baume onctueux qui nourrit et répare intensément les peaux sèches et abîmées."
-    },
-    { 
-      id: 3, 
-      name: "Huile Précieuse Trio Africain", 
-      price: "42€", 
-      rating: 4.9, 
-      reviews: 1543,
-      image: "huile-argan.jpg",
-      subtitle: "Trio d'huiles précieuses",
-      category: "huiles",
-      badges: ["Premium", "Anti-âge"],
-      ingredients: ['Huile d\'Argan', 'Huile de Baobab', 'Huile de Marula'],
-      benefits: ['Éclat immédiat', 'Anti-âge', 'Nourrit'],
-      description: "Synergie de trois huiles précieuses d'Afrique pour une peau éclatante et revitalisée."
-    },
-    { 
-      id: 4, 
-      name: "Crème Hydratante Karité", 
-      price: "25€", 
-      rating: 4.8, 
-      reviews: 1876,
-      image: "creme-hydratante.jpg",
-      subtitle: "Hydratation quotidienne",
-      category: "cremes",
-      badges: ["Quotidien", "Tous types"],
-      ingredients: ['Karité Bio', 'Acide Hyaluronique', 'Calendula'],
-      benefits: ['Hydrate 24h', 'Protège', 'Confort'],
-      description: "Crème hydratante quotidienne qui protège et maintient l'hydratation de la peau."
-    },
-    { 
-      id: 5, 
-      name: "Masque Argile Bleu Purifiante", 
-      price: "28€", 
-      rating: 4.6, 
-      reviews: 743,
-      image: "masque-argile.jpg",
-      subtitle: "Purification intense",
-      category: "masques",
-      badges: ["Détox", "Sensible"],
-      ingredients: ['Argile Bleu', 'Poudre de Riz', 'Extrait de Hibiscus'],
-      benefits: ['Purifie en douceur', 'Illumine', 'Affine le grain'],
-      description: "Masque purifiant ultra-doux à l'argile Bleu, spécialement formulé pour les peaux sensibles."
-    },
-    { 
-      id: 6, 
-      name: "Lait Démaquillant Karité", 
-      price: "24€", 
-      rating: 4.9, 
-      reviews: 2156,
-      image: "lait-calendula.jpg",
-      subtitle: "Nettoyage doux",
-      category: "nettoyants",
-      badges: ["Extra-Doux", "Nourrissant"],
-      ingredients: ['Karité Bio', 'Calendula', 'Camomille'],
-      benefits: ['Démaquille parfaitement', 'Nourrit', 'Apaise'],
-      description: "Lait démaquillant onctueux qui nettoie en douceur tout en nourrissant votre peau."
-    }
+    { id: 'all', name: 'Tous les produits', icon: SparklesIcon },
+    { id: 'serums', name: 'Sérums', icon: SparklesIcon },
+    { id: 'cremes', name: 'Crèmes', icon: SparklesIcon },
+    { id: 'huiles', name: 'Huiles', icon: SparklesIcon },
+    { id: 'masques', name: 'Masques', icon: SparklesIcon },
+    { id: 'nettoyants', name: 'Nettoyants', icon: SparklesIcon }
   ];
 
   // Filtrage des produits
-  const filteredProducts = activeFilter === 'all' 
-    ? products 
-    : products.filter(product => product.category.includes(activeFilter));
+  const filteredProducts = getProductsByCategory(activeFilter);
 
-  // Produits recommandés
-  const getRecommendations = () => {
+  // Produits recommandés personnalisés
+  const getPersonalizedRecommendations = () => {
     if (!userProfile) return products.slice(0, 3);
     
     const userConcerns = userProfile.skinConcerns || [];
@@ -241,21 +125,68 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {getRecommendations().map((product, index) => (
+              {getPersonalizedRecommendations().map((product, index) => (
                 <motion.div
                   key={`rec-${product.id}`}
-                  className="relative bg-white/80 backdrop-blur-sm rounded-organic p-3 sm:p-4 border border-white/50"
+                  className="group relative bg-white/80 backdrop-blur-sm rounded-organic p-3 sm:p-4 border border-white/50 hover:bg-white transition-all duration-300"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
                   whileHover={{ scale: 1.02 }}
                 >
-                  <div className="aspect-square bg-secondary-linen rounded-lg mb-3 overflow-hidden">
+                  <div className="relative aspect-square bg-secondary-linen rounded-lg mb-3 overflow-hidden">
                     <img 
                       src={`/images/products/${product.image}`} 
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />
+                    
+                    {/* Actions au survol */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300">
+                      <div className="absolute top-2 right-2">
+                        <motion.button
+                          onClick={() => toggleFavorite(product)}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center backdrop-blur-md transition-all ${
+                            favorites.some(fav => fav.id === product.id)
+                              ? 'bg-accent-coral text-white'
+                              : 'bg-white/80 text-primary-sage hover:text-accent-coral'
+                          }`}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          title={favorites.some(fav => fav.id === product.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                        >
+                          <HeartIcon className="w-3 h-3" />
+                        </motion.button>
+                      </div>
+                      
+                      <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                        <div className="flex gap-2">
+                          <motion.button
+                            onClick={() => {
+                              if (setSelectedProductId && setCurrentPage) {
+                                setSelectedProductId(product.id);
+                                setCurrentPage('product-detail');
+                              }
+                            }}
+                            className="flex-1 bg-white/90 backdrop-blur-md text-primary-forest font-semibold py-1.5 px-2 rounded-lg hover:bg-white transition-all text-xs"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <EyeIcon className="w-3 h-3 inline mr-1" />
+                            <span>Détails</span>
+                          </motion.button>
+                          <motion.button
+                            onClick={() => addToCart(product)}
+                            className="bg-primary-gold text-white px-2 py-1.5 rounded-lg hover:bg-primary-gold/90 transition-all"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="Ajouter au panier"
+                          >
+                            <ShoppingBagIcon className="w-3 h-3" />
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   
                   <h4 className="font-bold text-sm sm:text-base text-primary-forest mb-1">
@@ -264,7 +195,7 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                   <p className="text-xs text-primary-sage mb-2">
                     {product.subtitle}
                   </p>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="text-primary-gold font-bold text-sm sm:text-base">
                       {product.price || 0}
                     </span>
@@ -272,6 +203,32 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                       <StarIcon className="w-3 h-3 text-primary-gold fill-current" />
                       <span className="text-xs font-medium">{product.rating}</span>
                     </div>
+                  </div>
+                  
+                  {/* Boutons d'action toujours visibles */}
+                  <div className="flex gap-2">
+                    <motion.button
+                      onClick={() => {
+                        if (setSelectedProductId && setCurrentPage) {
+                          setSelectedProductId(product.id);
+                          setCurrentPage('product-detail');
+                        }
+                      }}
+                      className="flex-1 bg-primary-forest/10 text-primary-forest font-semibold py-2 px-3 rounded-lg hover:bg-primary-forest hover:text-white transition-all text-xs"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      Voir détails
+                    </motion.button>
+                    <motion.button
+                      onClick={() => addToCart(product)}
+                      className="bg-primary-gold text-white px-4 py-2 rounded-lg hover:bg-primary-gold/90 transition-all text-xs font-semibold"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      title="Ajouter au panier"
+                    >
+                      Ajouter au panier
+                    </motion.button>
                   </div>
                 </motion.div>
               ))}
@@ -301,16 +258,11 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                 whileTap={{ scale: 0.98 }}
               >
                 <IconComponent className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                  activeFilter === filter.id ? 'text-white' : filter.color
+                  activeFilter === filter.id ? 'text-white' : 'text-primary-sage'
                 }`} />
                 <div className="text-left">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-xs sm:text-sm">{filter.name}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      activeFilter === filter.id ? 'bg-white/20' : 'bg-primary-sage/20'
-                    }`}>
-                      {filter.count}
-                    </span>
                   </div>
                 </div>
               </motion.button>
@@ -346,7 +298,7 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                   {/* Overlay Actions */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300">
                     <div className="absolute top-3 sm:top-4 left-3 sm:left-4 flex flex-col gap-2">
-                      {product.badges.map((badge, badgeIndex) => (
+                      {(product.badges || []).map((badge, badgeIndex) => (
                         <span 
                           key={badgeIndex}
                           className="bg-primary-gold text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full"
@@ -358,15 +310,15 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                     
                     <div className="absolute top-3 sm:top-4 right-3 sm:right-4 flex flex-col gap-2">
                       <motion.button
-                        onClick={() => toggleFavorite && toggleFavorite(product)}
+                        onClick={() => toggleFavorite(product)}
                         className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center backdrop-blur-md transition-all ${
-                          favorites && favorites.some(fav => fav.id === product.id)
+                          favorites.some(fav => fav.id === product.id)
                             ? 'bg-accent-coral text-white'
                             : 'bg-white/80 text-primary-sage hover:text-accent-coral'
                         }`}
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                        title={favorites && favorites.some(fav => fav.id === product.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                        title={favorites.some(fav => fav.id === product.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
                       >
                         <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </motion.button>
@@ -390,7 +342,7 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                           <span className="sm:hidden">Détails</span>
                         </motion.button>
                         <motion.button
-                          onClick={() => addToCart && addToCart(product)}
+                          onClick={() => addToCart(product)}
                           className="bg-primary-gold text-white p-2 rounded-lg hover:bg-primary-gold/90 transition-all"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -420,7 +372,7 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                   <div className="mb-4">
                     <p className="text-xs text-primary-sage/80 mb-2">Ingrédients clés :</p>
                     <div className="flex flex-wrap gap-1">
-                      {product.ingredients.slice(0, 2).map((ingredient, index) => (
+                      {(product.ingredients || []).slice(0, 2).map((ingredient, index) => (
                         <span 
                           key={index}
                           className="bg-accent-moss/10 text-accent-moss text-xs px-2 py-1 rounded-full"
@@ -428,9 +380,9 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                           {ingredient}
                         </span>
                       ))}
-                      {product.ingredients.length > 2 && (
+                      {(product.ingredients || []).length > 2 && (
                         <span className="text-xs text-primary-sage/60">
-                          +{product.ingredients.length - 2}
+                          +{(product.ingredients || []).length - 2}
                         </span>
                       )}
                     </div>
@@ -469,7 +421,7 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
                   <div className="mb-4">
                     <p className="text-xs text-primary-sage/80 mb-2">Bénéfices :</p>
                     <div className="flex flex-wrap gap-1">
-                      {product.benefits.slice(0, 3).map((benefit, index) => (
+                      {(product.benefits || []).slice(0, 3).map((benefit, index) => (
                         <span 
                           key={index}
                           className="bg-primary-gold/10 text-primary-gold text-xs px-2 py-1 rounded-full"
@@ -482,12 +434,12 @@ const ProductsSection = ({ userProfile, setCurrentPage, setSelectedProductId }) 
 
                   {/* Action Button */}
                   <motion.button
-                    onClick={() => addToCart && addToCart(product)}
+                    onClick={() => addToCart(product)}
                     className="w-full bg-primary-forest text-white py-2 sm:py-3 px-4 rounded-lg font-semibold hover:bg-primary-forest/90 transition-all text-sm sm:text-base"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    Ajouter au panier • {product.price || 0}
+                    Ajouter au panier
                   </motion.button>
                 </div>
               </motion.div>

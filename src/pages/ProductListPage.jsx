@@ -18,6 +18,7 @@ import {
   CheckIcon
 } from '@heroicons/react/24/outline';
 import { useShop } from '../context/ShopContext';
+import { products as allProducts, getProductsByCategory } from '../data/products';
 
 const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSelectedProductId }) => {
   const { addToCart, addNotification, addToFavorites, removeFromFavorites, favorites } = useShop();
@@ -42,106 +43,6 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
     masques: { title: 'Masques Purifiants', subtitle: 'Soins intensifs hebdomadaires' },
     nettoyants: { title: 'Nettoyants Doux', subtitle: 'Purification respectueuse' }
   }), []);
-
-  // Produits avec validation sécurisée
-  const allProducts = useMemo(() => [
-    {
-      id: 1,
-      name: "Sérum Éclaircissant Vitamine C+",
-      price: 48,
-      rating: 4.9,
-      reviews: 1847,
-      image: "serum-vitc.jpg",
-      category: 'serums',
-      skinTypes: ['tous', 'grasse', 'mixte'],
-      concerns: ['anti-taches', 'eclat'],
-      ingredients: ['vitamine-c', 'niacinamide'],
-      badges: ['Best-seller', 'Anti-taches'],
-      inStock: true,
-      featured: true,
-      description: "Sérum haute performance pour réduire l'hyperpigmentation"
-    },
-    {
-      id: 2,
-      name: "Huile Précieuse Trio Africain",
-      price: 42,
-      rating: 4.9,
-      reviews: 1876,
-      image: "huile-argan.jpg",
-      category: 'huiles',
-      skinTypes: ['seche', 'sensible', 'mature'],
-      concerns: ['hydratation', 'anti-age'],
-      ingredients: ['argan', 'baobab', 'karite'],
-      badges: ['Bio', 'Artisanal'],
-      inStock: true,
-      featured: true,
-      description: "Mélange d'huiles précieuses africaines"
-    },
-    {
-      id: 3,
-      name: "Crème Hydratante Karité Supreme",
-      price: 35,
-      rating: 4.8,
-      reviews: 1234,
-      image: "creme-hydratante.jpg",
-      category: 'cremes',
-      skinTypes: ['tous', 'seche'],
-      concerns: ['hydratation'],
-      ingredients: ['karite', 'aloe'],
-      badges: ['Quotidien'],
-      inStock: true,
-      featured: false,
-      description: "Hydratation 24h avec karité pur"
-    },
-    {
-      id: 4,
-      name: "Masque Éclat Argile Rose",
-      price: 28,
-      rating: 4.7,
-      reviews: 892,
-      image: "masque-argile.jpg",
-      category: 'masques',
-      skinTypes: ['sensible', 'terne'],
-      concerns: ['eclat', 'purete'],
-      ingredients: ['argile-rose'],
-      badges: ['Sensible'],
-      inStock: true,
-      featured: false,
-      description: "Purification douce pour éclat immédiat"
-    },
-    {
-      id: 5,
-      name: "Gel Nettoyant Hibiscus",
-      price: 24,
-      rating: 4.6,
-      reviews: 657,
-      image: "gel-hibiscus.jpg",
-      category: 'nettoyants',
-      skinTypes: ['grasse', 'mixte'],
-      concerns: ['purete'],
-      ingredients: ['hibiscus'],
-      badges: ['Doux'],
-      inStock: true,
-      featured: false,
-      description: "Nettoyage en douceur avec hibiscus"
-    },
-    {
-      id: 6,
-      name: "Sérum Niacinamide 10%",
-      price: 32,
-      rating: 4.8,
-      reviews: 1456,
-      image: "serum-niacinamide.jpg",
-      category: 'serums',
-      skinTypes: ['grasse', 'mixte'],
-      concerns: ['purete', 'anti-taches'],
-      ingredients: ['niacinamide'],
-      badges: ['Concentré'],
-      inStock: true,
-      featured: false,
-      description: "Traitement ciblé pores et imperfections"
-    }
-  ], []);
 
   // Options de filtres sécurisées
   const filterOptions = useMemo(() => ({
@@ -607,7 +508,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                       
                       {/* Badges */}
                       <div className="absolute top-1.5 xs:top-2 sm:top-3 left-1.5 xs:left-2 sm:left-3 flex flex-col gap-1 xs:gap-1 sm:gap-2">
-                        {product.badges.map((badge, badgeIndex) => (
+                        {(product.badges || []).map((badge, badgeIndex) => (
                           <span 
                             key={badgeIndex}
                             className="bg-primary-gold text-white text-xs font-bold px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-full"
@@ -708,7 +609,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                       {/* Bénéfices */}
                       <div className="mb-2 xs:mb-3">
                         <div className="flex flex-wrap gap-1">
-                          {product.benefits.slice(0, 2).map((benefit, index) => (
+                          {(product.benefits || []).slice(0, 2).map((benefit, index) => (
                             <span 
                               key={index}
                               className="bg-primary-gold/10 text-primary-gold text-xs px-1.5 xs:px-2 py-0.5 xs:py-1 rounded-full"
@@ -761,9 +662,7 @@ const ProductListPage = ({ category = 'all', userProfile, setCurrentPage, setSel
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <span className="hidden xs:inline sm:hidden">Ajouter • {product.price || 0}€</span>
-                        <span className="xs:hidden sm:inline">Ajouter au panier • {product.price || 0}€</span>
-                        <span className="xs:hidden">+ {product.price || 0}€</span>
+                        Ajouter au panier
                       </motion.button>
                     </div>
                   </motion.div>

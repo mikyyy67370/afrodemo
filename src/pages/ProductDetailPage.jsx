@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import {
   StarIcon,
@@ -20,6 +20,8 @@ import {
   EyeIcon
 } from '@heroicons/react/24/outline';
 import { AnimatePresence } from 'framer-motion';
+import { getProductById, getRecommendedProducts } from '../data/products';
+import { useShop } from '../context/ShopContext';
 
 const ProductDetailPage = ({ productId = 1, userProfile, setCurrentPage, setSelectedProductId }) => {
   const [selectedImage, setSelectedImage] = useState(0);
@@ -27,50 +29,11 @@ const ProductDetailPage = ({ productId = 1, userProfile, setCurrentPage, setSele
   const [activeTab, setActiveTab] = useState('description');
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // Données produit détaillées (simulées)
-  const product = {
-    id: productId,
-    name: "Sérum Éclaircissant Vitamine C",
-    price: 48,
-    rating: 4.9,
-    reviews: 1847,
-    image: "serum-vitc.jpg",
-    category: 'Sérums',
-    badges: ['Best-seller', 'Anti-taches'],
-    description: "Sérum haute performance pour réduire l'hyperpigmentation et unifier le teint.",
-    subtitle: "Concentré anti-taches intensif 30ml",
-    inStock: true,
-    images: [
-      "serum-vitc.jpg",
-      "serum-vitc-2.jpg",
-      "serum-vitc-3.jpg",
-      "serum-vitc-texture.jpg"
-    ],
-    keyIngredients: [
-      { name: 'Vitamine C', percentage: '15%', benefit: 'Éclaircit les taches' },
-      { name: 'Niacinamide', percentage: '5%', benefit: 'Unifie le teint' },
-      { name: 'Acide Kojique', percentage: '2%', benefit: 'Prévient les taches' },
-      { name: 'Aloe Vera Bio', percentage: '10%', benefit: 'Apaise et hydrate' }
-    ],
-    benefits: [
-      'Réduit les taches brunes de 85% en 8 semaines',
-      'Unifie le teint et révèle l\'éclat naturel',
-      'Prévient l\'apparition de nouvelles taches',
-      'Texture légère et non grasse',
-      'Formule hypoallergénique testée dermatologiquement'
-    ],
-    usage: [
-      'Appliquer matin et/ou soir sur peau propre',
-      'Masser délicatement jusqu\'à absorption complète',
-      'Éviter le contour des yeux',
-      'Utiliser une protection solaire en journée',
-      'Résultats visibles dès 4 semaines d\'utilisation'
-    ],
-    composition: 'Aqua, Magnesium Ascorbyl Phosphate (Vitamine C), Niacinamide, Kojic Acid, Aloe Barbadensis Leaf Juice*, Glycerin, Hyaluronic Acid, Tocopherol (Vitamine E), Benzyl Alcohol, Dehydroacetic Acid. *Ingrédient issu de l\'agriculture biologique.',
-    certifications: ['COSMOS Organic', 'Ecocert', 'Cruelty Free'],
-    skinTypes: ['Tous types', 'Peaux foncées', 'Peaux métissées'],
-    concerns: ['Hyperpigmentation', 'Taches brunes', 'Teint terne']
-  };
+  // Récupérer le produit depuis la base de données
+  const product = getProductById(productId);
+  
+  // Produits recommandés
+  const recommendedProducts = getRecommendedProducts(productId, 3);
 
   // Avis clients
   const reviews = [
@@ -106,31 +69,6 @@ const ProductDetailPage = ({ productId = 1, userProfile, setCurrentPage, setSele
     }
   ];
 
-  // Produits recommandés
-  const recommendedProducts = [
-    {
-      id: 2,
-      name: "Crème Hydratante Karité",
-      price: 25,
-      image: "creme-hydratante.jpg",
-      rating: 4.8
-    },
-    {
-      id: 3,
-      name: "Huile Précieuse Trio Africain",
-      price: 42,
-      image: "huile-argan.jpg",
-      rating: 4.9
-    },
-    {
-      id: 6,
-      name: "Lait Démaquillant Karité",
-      price: 24,
-      image: "lait-calendula.jpg",
-      rating: 4.9
-    }
-  ];
-
   const tabs = [
     { id: 'description', label: 'Description', icon: BeakerIcon },
     { id: 'usage', label: 'Utilisation', icon: SparklesIcon },
@@ -138,9 +76,14 @@ const ProductDetailPage = ({ productId = 1, userProfile, setCurrentPage, setSele
     { id: 'reviews', label: `Avis (${reviews.length})`, icon: ChatBubbleBottomCenterTextIcon }
   ];
 
-  const addToCart = () => {
-    // Logique d'ajout au panier
-    console.log(`Ajouté au panier: ${product.name} x${quantity}`);
+  // Utiliser la fonction addToCart du Context
+  const { addToCart, addToFavorites, removeFromFavorites } = useShop();
+
+  const handleAddToCart = (productToAdd = product) => {
+    console.log(`Adding to cart: ${productToAdd.name} x${quantity}`);
+    if (addToCart && productToAdd) {
+      addToCart(productToAdd);
+    }
   };
 
   return (
@@ -309,7 +252,7 @@ const ProductDetailPage = ({ productId = 1, userProfile, setCurrentPage, setSele
               {/* Actions principales responsive */}
               <div className="flex flex-col xs:flex-col sm:flex-row gap-2 xs:gap-3 sm:gap-4">
                 <motion.button
-                  onClick={() => addToCart && addToCart(product)}
+                  onClick={() => handleAddToCart()}
                   className="flex-1 bg-primary-forest text-white py-3 xs:py-3.5 sm:py-4 px-4 xs:px-6 sm:px-8 rounded-lg font-semibold hover:bg-primary-forest/90 transition-all text-sm xs:text-sm sm:text-base"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -623,13 +566,12 @@ const ProductDetailPage = ({ productId = 1, userProfile, setCurrentPage, setSele
                   </div>
 
                   <motion.button
-                    onClick={() => addToCart && addToCart(recProduct)}
+                    onClick={() => handleAddToCart(recProduct)}
                     className="w-full bg-primary-forest text-white py-2 sm:py-3 px-4 rounded-lg font-semibold hover:bg-primary-forest/90 transition-all mt-3 text-xs sm:text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    <span className="hidden sm:inline">Ajouter au panier • {recProduct.price || 0}€</span>
-                    <span className="sm:hidden">Ajouter • {recProduct.price || 0}€</span>
+                    Ajouter au panier
                   </motion.button>
                 </div>
               </motion.div>

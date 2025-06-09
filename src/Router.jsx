@@ -21,7 +21,16 @@ import LegalPage from './pages/LegalPage';
 
 const Router = () => {
   const [currentPage, setCurrentPage] = useState('home');
-  const [userProfile, setUserProfile] = useState({ id: 'discovery' });
+  const [userProfile, setUserProfile] = useState({
+    id: 'discovery',
+    firstName: 'Visiteur',
+    lastName: '',
+    email: '',
+    skinType: 'mixte',
+    skinConcerns: ['hydratation', 'eclat', 'taches_brunes'],
+    visitCount: 0,
+    isLoggedIn: false
+  });
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedProductId, setSelectedProductId] = useState(null);
   

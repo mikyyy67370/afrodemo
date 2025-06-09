@@ -222,7 +222,27 @@ export const ShopProvider = ({ children }) => {
     localStorage.setItem('terra-luxe-profile', JSON.stringify(state.userProfile));
   }, [state.userProfile]);
 
-  // Actions
+  // Actions - Réorganisées pour éviter les problèmes de dépendances
+  const addNotification = (notification) => {
+    const id = Date.now() + Math.random();
+    const notificationWithId = { ...notification, id };
+    
+    dispatch({ type: actionTypes.ADD_NOTIFICATION, payload: notificationWithId });
+    
+    // Auto-remove après duration
+    if (notification.duration) {
+      setTimeout(() => {
+        removeNotification(id);
+      }, notification.duration);
+    }
+    
+    return id; // Retourner l'ID pour debug
+  };
+
+  const removeNotification = (notificationId) => {
+    dispatch({ type: actionTypes.REMOVE_NOTIFICATION, payload: notificationId });
+  };
+
   const addToCart = (product) => {
     dispatch({ type: actionTypes.ADD_TO_CART, payload: product });
     
@@ -269,21 +289,6 @@ export const ShopProvider = ({ children }) => {
 
   const updateUserProfile = (profileData) => {
     dispatch({ type: actionTypes.UPDATE_USER_PROFILE, payload: profileData });
-  };
-
-  const addNotification = (notification) => {
-    dispatch({ type: actionTypes.ADD_NOTIFICATION, payload: notification });
-    
-    // Auto-remove après duration
-    if (notification.duration) {
-      setTimeout(() => {
-        removeNotification(notification.id || Date.now());
-      }, notification.duration);
-    }
-  };
-
-  const removeNotification = (notificationId) => {
-    dispatch({ type: actionTypes.REMOVE_NOTIFICATION, payload: notificationId });
   };
 
   // Getters utiles
