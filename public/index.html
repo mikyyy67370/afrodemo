@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2D5016" />
+    <meta name="description" content="Hero Section Premium pour cosmétiques bio avec personnalisation IA - Démonstration interactive" />
+    
+    <!-- Preload des polices critiques -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- SEO et Open Graph -->
+    <meta property="og:title" content="Hero Section Premium - Cosmétiques Bio" />
+    <meta property="og:description" content="Composant React avec personnalisation IA, animations Framer Motion et design Natural Luxury Tech" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.jpg" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Hero Section Premium - Cosmétiques Bio" />
+    <meta name="twitter:description" content="Démonstration interactive du composant Hero avec IA" />
+    
+    <title>Hero Section Premium - Cosmétiques Bio | Démo Interactive</title>
+  </head>
+  <body>
+    <noscript>
+      <div style="padding: 2rem; text-align: center; background: #F9F6F1; color: #2D5016; font-family: sans-serif;">
+        <h1>JavaScript requis</h1>
+        <p>Cette démonstration nécessite JavaScript pour fonctionner.</p>
+        <p>Veuillez activer JavaScript dans votre navigateur.</p>
+      </div>
+    </noscript>
+    
+    <!-- Container principal pour React -->
+    <div id="root"></div>
+    
+    <!-- Indicateur de chargement -->
+    <style>
+      #root:empty::before {
+        content: "Chargement de la démo...";
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        font-family: 'Avenir Next', sans-serif;
+        font-size: 1.25rem;
+        color: #2D5016;
+        background: linear-gradient(135deg, #F9F6F1 0%, #F5F2ED 100%);
+      }
+    </style>
+  </body>
+</html> 

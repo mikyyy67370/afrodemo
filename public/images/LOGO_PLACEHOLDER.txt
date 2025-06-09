@@ -1,0 +1,17 @@
+INSTRUCTIONS POUR LE LOGO TERRAFRO
+=====================================
+
+Placez votre fichier logo dans ce dossier avec le nom : logo.png
+
+Spécifications recommandées :
+- Nom du fichier : logo.png  
+- Dimensions : 200x200 pixels minimum
+- Format : PNG avec fond transparent
+- Poids : moins de 500KB
+
+Le logo apparaîtra dans :
+- L'en-tête du site (HeaderPremium.jsx)
+- L'en-tête alternatif (Header.jsx)
+- Potentiellement dans le footer
+
+Une fois le fichier logo.png ajouté, le site utilisera automatiquement votre logo au lieu du fallback "TF". 
